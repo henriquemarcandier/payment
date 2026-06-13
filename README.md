@@ -28,6 +28,9 @@ mysql -u root -e "CREATE DATABASE payment CHARACTER SET utf8mb4 COLLATE utf8mb4_
 php artisan migrate
 php artisan db:seed
 
+# Alternatively, you can import payment.sql (phpMyAdmin or mysql CLI)
+# but running php artisan migrate is the recommended way.
+
 # Start the server
 php artisan serve
 ```
