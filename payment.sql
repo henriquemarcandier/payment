@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50505
 File Encoding         : 65001
 
-Date: 2026-06-13 04:20:39
+Date: 2026-06-13 06:06:21
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -117,7 +117,7 @@ CREATE TABLE `migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
 -- Records of migrations
@@ -128,6 +128,117 @@ INSERT INTO `migrations` VALUES ('3', '0001_01_01_000002_create_jobs_table', '1'
 INSERT INTO `migrations` VALUES ('4', '2026_06_08_000005_add_role_country_currency_to_users_table', '2');
 INSERT INTO `migrations` VALUES ('5', '2026_06_08_000006_create_payment_requests_table', '2');
 INSERT INTO `migrations` VALUES ('6', '2026_06_13_052648_create_personal_access_tokens_table', '2');
+INSERT INTO `migrations` VALUES ('7', '2026_06_13_074228_create_oauth_auth_codes_table', '3');
+INSERT INTO `migrations` VALUES ('8', '2026_06_13_074229_create_oauth_access_tokens_table', '3');
+INSERT INTO `migrations` VALUES ('9', '2026_06_13_074230_create_oauth_refresh_tokens_table', '3');
+INSERT INTO `migrations` VALUES ('10', '2026_06_13_074231_create_oauth_clients_table', '3');
+INSERT INTO `migrations` VALUES ('11', '2026_06_13_074232_create_oauth_device_codes_table', '3');
+
+-- ----------------------------
+-- Table structure for `oauth_access_tokens`
+-- ----------------------------
+DROP TABLE IF EXISTS `oauth_access_tokens`;
+CREATE TABLE `oauth_access_tokens` (
+  `id` char(80) NOT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `client_id` char(36) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `scopes` text DEFAULT NULL,
+  `revoked` tinyint(1) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `expires_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `oauth_access_tokens_user_id_index` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------
+-- Records of oauth_access_tokens
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for `oauth_auth_codes`
+-- ----------------------------
+DROP TABLE IF EXISTS `oauth_auth_codes`;
+CREATE TABLE `oauth_auth_codes` (
+  `id` char(80) NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `client_id` char(36) NOT NULL,
+  `scopes` text DEFAULT NULL,
+  `revoked` tinyint(1) NOT NULL,
+  `expires_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `oauth_auth_codes_user_id_index` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------
+-- Records of oauth_auth_codes
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for `oauth_clients`
+-- ----------------------------
+DROP TABLE IF EXISTS `oauth_clients`;
+CREATE TABLE `oauth_clients` (
+  `id` char(36) NOT NULL,
+  `owner_type` varchar(255) DEFAULT NULL,
+  `owner_id` bigint(20) unsigned DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `secret` varchar(255) DEFAULT NULL,
+  `provider` varchar(255) DEFAULT NULL,
+  `redirect_uris` text NOT NULL,
+  `grant_types` text NOT NULL,
+  `revoked` tinyint(1) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `oauth_clients_owner_type_owner_id_index` (`owner_type`,`owner_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------
+-- Records of oauth_clients
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for `oauth_device_codes`
+-- ----------------------------
+DROP TABLE IF EXISTS `oauth_device_codes`;
+CREATE TABLE `oauth_device_codes` (
+  `id` char(80) NOT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `client_id` char(36) NOT NULL,
+  `user_code` char(8) NOT NULL,
+  `scopes` text NOT NULL,
+  `revoked` tinyint(1) NOT NULL,
+  `user_approved_at` datetime DEFAULT NULL,
+  `last_polled_at` datetime DEFAULT NULL,
+  `expires_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `oauth_device_codes_user_code_unique` (`user_code`),
+  KEY `oauth_device_codes_user_id_index` (`user_id`),
+  KEY `oauth_device_codes_client_id_index` (`client_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------
+-- Records of oauth_device_codes
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for `oauth_refresh_tokens`
+-- ----------------------------
+DROP TABLE IF EXISTS `oauth_refresh_tokens`;
+CREATE TABLE `oauth_refresh_tokens` (
+  `id` char(80) NOT NULL,
+  `access_token_id` char(80) NOT NULL,
+  `revoked` tinyint(1) NOT NULL,
+  `expires_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `oauth_refresh_tokens_access_token_id_index` (`access_token_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------
+-- Records of oauth_refresh_tokens
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for `password_reset_tokens`
@@ -257,4 +368,4 @@ INSERT INTO `users` VALUES ('4', 'Takashi Yamamoto', 'takashi@empresa.com', null
 INSERT INTO `users` VALUES ('5', 'Sarah Johnson', 'sarah@empresa.com', null, '$2y$12$I2rNzU9QmCblRmA.5Sctt.NSHoR68UUev5DNTAq73bYmmJEdOqovu', 'employee', 'United States', 'USD', null, '2026-06-13 05:31:05', '2026-06-13 05:31:05');
 INSERT INTO `users` VALUES ('6', 'Carlos Mendes', 'carlos@empresa.com', null, '$2y$12$UTHMQNudiE1UpzUEXTLPBe//2Arem5FIyRvW38xvtx337hWq8qn/O', 'employee', 'Brazil', 'BRL', null, '2026-06-13 05:31:05', '2026-06-13 05:31:05');
 INSERT INTO `users` VALUES ('7', 'Finance Team', 'finance@empresa.com', null, '$2y$12$2479.JWEnMt2ZU2Cr6mjgetQYJS.I4/KvU5d1BbMFDR8r0RWxnxpi', 'finance', 'Portugal', 'EUR', null, '2026-06-13 05:31:05', '2026-06-13 05:31:05');
-INSERT INTO `users` VALUES ('8', 'John', 'john@test.com', null, '$2y$12$n2GBWPe5SfE000uUAeUi6uZfSt4E6sQIcJS0sDufpLl3TA6oXiHtW', 'employee', null, null, null, '2026-06-13 06:27:32', '2026-06-13 06:27:32');
+INSERT INTO `users` VALUES ('8', 'John', 'john@test.com', null, '$2y$12$2479.JWEnMt2ZU2Cr6mjgetQYJS.I4/KvU5d1BbMFDR8r0RWxnxpi', 'employee', 'Brazil', 'BRL', null, '2026-06-13 06:27:32', '2026-06-13 06:27:32');
