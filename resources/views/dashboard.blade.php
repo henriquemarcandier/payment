@@ -362,7 +362,7 @@
         </div>
 
         <div style="text-align:center;margin-top:32px;padding:16px;color:#9ca3af;font-size:13px;border-top:1px solid #e5e7eb;">
-            &copy; {{ date('Y') }} - Desenvolvido por Henrique Marcandier Marques Gonçalves
+            &copy; {{ date('Y') }} - Powered by Henrique Marcandier Marques Gonçalves
         </div>
     </div>
 

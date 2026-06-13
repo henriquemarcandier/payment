@@ -258,7 +258,7 @@
         </details>
 
         <div class="login-footer">
-            <p>&copy; {{ date('Y') }} - Desenvolvido por Henrique Marcandier Marques Gonçalves</p>
+            <p>&copy; {{ date('Y') }} - Powered by Henrique Marcandier Marques Gonçalves</p>
         </div>
     </div>
 </body>

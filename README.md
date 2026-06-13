@@ -108,6 +108,15 @@ Add to crontab:
 
 All users password: `password`
 
+## Web Access
+
+Open in your browser:
+
+- **Login page:** `http://localhost/payment/public/` or `http://localhost/payment/public/login`
+- **Dashboard (after login):** `http://localhost/payment/public/dashboard`
+
+On the dashboard you'll find the **Currency Converter** — select a source and target currency to see the live exchange rate.
+
 ## Tests
 
 ```bash
