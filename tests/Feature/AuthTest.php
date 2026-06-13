@@ -4,11 +4,22 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Passport\ClientRepository;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $clientRepo = app(ClientRepository::class);
+        $clientRepo->createPersonalAccessGrantClient(
+            'Test Personal Access Client'
+        );
+    }
 
     public function test_user_can_register(): void
     {
@@ -50,7 +61,7 @@ class AuthTest extends TestCase
     public function test_authenticated_user_can_logout(): void
     {
         $user = User::factory()->create();
-        $token = $user->createToken('api-token')->plainTextToken;
+        $token = $user->createToken('api-token')->accessToken;
 
         $response = $this->withToken($token)
             ->postJson('/api/logout');

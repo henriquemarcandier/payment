@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\PaymentRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class PaymentRequestTest extends TestCase
@@ -13,11 +15,27 @@ class PaymentRequestTest extends TestCase
 
     private User $employee;
     private User $finance;
-    private string $token;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        Http::preventStrayRequests();
+
+        Http::fake([
+            'v6.exchangerate-api.com/v6/*' => Http::response([
+                'result'           => 'success',
+                'base_code'        => 'EUR',
+                'conversion_rates' => [
+                    'USD' => 1.08,
+                    'EUR' => 1,
+                    'BRL' => 5.40,
+                    'GBP' => 0.86,
+                    'JPY' => 162.50,
+                ],
+                'time_last_update_utc' => '2024-01-01 00:00:00',
+            ]),
+        ]);
 
         $this->employee = User::factory()->create([
             'role'     => 'employee',
@@ -32,14 +50,13 @@ class PaymentRequestTest extends TestCase
 
     public function test_employee_can_create_payment_request(): void
     {
-        $token = $this->employee->createToken('api-token')->plainTextToken;
+        Passport::actingAs($this->employee);
 
-        $response = $this->withToken($token)
-            ->postJson('/api/payment-requests', [
-                'amount'      => 100.00,
-                'currency'    => 'USD',
-                'description' => 'Office supplies',
-            ]);
+        $response = $this->postJson('/api/payment-requests', [
+            'amount'      => 100.00,
+            'currency'    => 'USD',
+            'description' => 'Office supplies',
+        ]);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
@@ -55,10 +72,9 @@ class PaymentRequestTest extends TestCase
             'user_id' => $this->employee->id,
         ]);
 
-        $token = $this->employee->createToken('api-token')->plainTextToken;
+        Passport::actingAs($this->employee);
 
-        $response = $this->withToken($token)
-            ->getJson('/api/payment-requests');
+        $response = $this->getJson('/api/payment-requests');
 
         $response->assertOk()
             ->assertJsonCount(3, 'data');
@@ -70,10 +86,9 @@ class PaymentRequestTest extends TestCase
             'user_id' => $this->employee->id,
         ]);
 
-        $token = $this->finance->createToken('api-token')->plainTextToken;
+        Passport::actingAs($this->finance);
 
-        $response = $this->withToken($token)
-            ->getJson('/api/payment-requests');
+        $response = $this->getJson('/api/payment-requests');
 
         $response->assertOk()
             ->assertJsonCount(2, 'data');
@@ -91,10 +106,9 @@ class PaymentRequestTest extends TestCase
             'status'  => 'approved',
         ]);
 
-        $token = $this->finance->createToken('api-token')->plainTextToken;
+        Passport::actingAs($this->finance);
 
-        $response = $this->withToken($token)
-            ->getJson('/api/payment-requests?status=pending');
+        $response = $this->getJson('/api/payment-requests?status=pending');
 
         $response->assertOk()
             ->assertJsonCount(1, 'data');
@@ -107,12 +121,11 @@ class PaymentRequestTest extends TestCase
             'status'  => 'pending',
         ]);
 
-        $token = $this->finance->createToken('api-token')->plainTextToken;
+        Passport::actingAs($this->finance);
 
-        $response = $this->withToken($token)
-            ->putJson("/api/payment-requests/{$paymentRequest->id}", [
-                'status' => 'approved',
-            ]);
+        $response = $this->putJson("/api/payment-requests/{$paymentRequest->id}", [
+            'status' => 'approved',
+        ]);
 
         $response->assertOk()
             ->assertJsonPath('status', 'approved');
@@ -125,12 +138,11 @@ class PaymentRequestTest extends TestCase
             'status'  => 'pending',
         ]);
 
-        $token = $this->employee->createToken('api-token')->plainTextToken;
+        Passport::actingAs($this->employee);
 
-        $response = $this->withToken($token)
-            ->putJson("/api/payment-requests/{$paymentRequest->id}", [
-                'status' => 'approved',
-            ]);
+        $response = $this->putJson("/api/payment-requests/{$paymentRequest->id}", [
+            'status' => 'approved',
+        ]);
 
         $response->assertStatus(403);
     }
@@ -141,10 +153,9 @@ class PaymentRequestTest extends TestCase
             'user_id' => $this->employee->id,
         ]);
 
-        $token = $this->employee->createToken('api-token')->plainTextToken;
+        Passport::actingAs($this->employee);
 
-        $response = $this->withToken($token)
-            ->getJson("/api/payment-requests/{$paymentRequest->id}");
+        $response = $this->getJson("/api/payment-requests/{$paymentRequest->id}");
 
         $response->assertOk()
             ->assertJsonPath('id', $paymentRequest->id);
@@ -157,24 +168,22 @@ class PaymentRequestTest extends TestCase
             'user_id' => $otherUser->id,
         ]);
 
-        $token = $this->employee->createToken('api-token')->plainTextToken;
+        Passport::actingAs($this->employee);
 
-        $response = $this->withToken($token)
-            ->getJson("/api/payment-requests/{$paymentRequest->id}");
+        $response = $this->getJson("/api/payment-requests/{$paymentRequest->id}");
 
         $response->assertStatus(403);
     }
 
     public function test_validation_requires_valid_currency(): void
     {
-        $token = $this->employee->createToken('api-token')->plainTextToken;
+        Passport::actingAs($this->employee);
 
-        $response = $this->withToken($token)
-            ->postJson('/api/payment-requests', [
-                'amount'      => 100,
-                'currency'    => 'INVALID',
-                'description' => 'Test',
-            ]);
+        $response = $this->postJson('/api/payment-requests', [
+            'amount'      => 100,
+            'currency'    => 'INVALID',
+            'description' => 'Test',
+        ]);
 
         $response->assertStatus(422);
     }
