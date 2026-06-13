@@ -115,6 +115,7 @@ All users password: `password`
 
 Open in your browser:
 
+- **Production:** `https://payment.bhcommerce.com.br`
 - **Login page:** `http://localhost/payment/public/` or `http://localhost/payment/public/login`
 - **Dashboard (after login):** `http://localhost/payment/public/dashboard`
 
